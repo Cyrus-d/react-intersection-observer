@@ -58,8 +58,8 @@ npm install react-intersection-observer --save
 const [ref, inView, entry] = useInView(options)
 ```
 
-The new React Hooks, makes it easier then ever to monitor the `inView` state of
-your components. Call the `useInView` hook, with the (optional)
+The new React Hooks make it easier than ever to monitor the `inView` state of
+your components. Call the `useInView` hook with the (optional)
 [options](#options) you need. It will return an array containing a `ref`, the
 `inView` status and the current
 [`IntersectionObserverEntry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry).
@@ -84,11 +84,13 @@ const Component = () => {
 }
 ```
 
+[![Edit react-intersection-observer](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/react-intersection-observer-ud2vo?fontsize=14&hidenavigation=1&theme=dark)
+
 ### Render props
 
 To use the `<InView>` component, you pass it a function. It will be called
 whenever the state changes, with the new value of `inView`. In addition to the
-`inView` prop, children also receives a `ref` that should be set on the
+`inView` prop, children also receive a `ref` that should be set on the
 containing DOM element. This is the element that the IntersectionObserver will
 monitor.
 
@@ -151,14 +153,18 @@ argument for the hooks.
 | **threshold**   | number \| number[] | 0       | false    | Number between 0 and 1 indicating the percentage that should be visible before triggering. Can also be an array of numbers, to create multiple trigger points. |
 | **triggerOnce** | boolean            | false   | false    | Only trigger this method once                                                                                                                                  |
 
-> ⚠️ When passing an array to `threshold`, store the array in a constant to avoid
-> the component re-rendering too often. For example:
+> ⚠️ When passing an array to `threshold`, store the array in a constant to
+> avoid the component re-rendering too often. For example:
 
 ```js
-const THRESHOLD = [0.25, 0.5, 0.75]; // Store multiple thresholds in a constant
+const THRESHOLD = [0.25, 0.5, 0.75] // Store multiple thresholds in a constant
 const MyComponent = () => {
-  const [ref, inView, entry] = useInView({threshold: THRESHOLD});
-  return <div ref={ref}>Triggered at intersection ratio {entry.intersectionRatio}</div>;
+  const [ref, inView, entry] = useInView({ threshold: THRESHOLD })
+  return (
+    <div ref={ref}>
+      Triggered at intersection ratio {entry.intersectionRatio}
+    </div>
+  )
 }
 ```
 
@@ -181,7 +187,7 @@ few ideas for how you can use it.
 - [Trigger animations](docs/Recipes.md#trigger-animations)
 - [Track impressions](docs/Recipes.md#track-impressions) _(Google Analytics, Tag
   Manager, etc)_
-  
+
 ## FAQ
 
 ### How can i assign multiple ref's to a component?
@@ -189,12 +195,15 @@ few ideas for how you can use it.
 You can wrap multiple `ref` assignments in a single `useCallback`:
 
 ```js
-const setRefs = useCallback(node => {
-  // Ref's from useRef needs to have the node assigned to `current`
-  ref.current = node
-  // Callback refs, like the one from `useInView`, is a function that takes the node as an argument
-  inViewRef(node)
-}, [inViewRef])
+const setRefs = useCallback(
+  node => {
+    // Ref's from useRef needs to have the node assigned to `current`
+    ref.current = node
+    // Callback refs, like the one from `useInView`, is a function that takes the node as an argument
+    inViewRef(node)
+  },
+  [inViewRef],
+)
 ```
 
 ## Testing
