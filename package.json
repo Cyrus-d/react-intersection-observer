@@ -1,5 +1,5 @@
 {
-  "name": "react-intersection-observer",
+  "name": "react-intersection-observer-fork",
   "version": "8.26.1",
   "description": "Monitor if a component is inside the viewport, using IntersectionObserver API",
   "source": "src/index.tsx",
@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "prebuild": "rm -rf dist lib",
+    "prebuild": "del -rf dist lib",
     "build": "run-s build:*",
     "build:bundle": "microbundle --name ReactIntersectionObserver --jsx React.createElement -f cjs,umd,es,modern --no-compress",
     "build:utils": "tsc -p tsconfig.test.json",
@@ -126,8 +126,7 @@
       "jest-setup.js"
     ]
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "react": "^15.0.0 || ^16.0.0 || ^17.0.0|| ^18.0.0"
   },
