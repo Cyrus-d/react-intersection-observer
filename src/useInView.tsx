@@ -1,49 +1,119 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import * as React from 'react'
-import { observe, unobserve } from './intersection'
-import { InViewHookResponse, IntersectionOptions } from './index'
+import * as React from 'react';
+import { InViewHookResponse, IntersectionOptions } from './index';
+import { useEffect } from 'react';
+import { observe } from './observers';
 
 type State = {
-  inView: boolean
-  entry?: IntersectionObserverEntry
-}
+  inView: boolean;
+  entry?: IntersectionObserverEntry;
+};
 
-export function useInView(
-  options: IntersectionOptions = {},
-): InViewHookResponse {
-  const ref = React.useRef<Element>()
+/**
+ * React Hooks make it easy to monitor the `inView` state of your components. Call
+ * the `useInView` hook with the (optional) [options](#options) you need. It will
+ * return an array containing a `ref`, the `inView` status and the current
+ * [`entry`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry).
+ * Assign the `ref` to the DOM element you want to monitor, and the hook will
+ * report the status.
+ *
+ * @example
+ * ```jsx
+ * import React from 'react';
+ * import { useInView } from 'react-intersection-observer';
+ *
+ * const Component = () => {
+ *   const { ref, inView, entry } = useInView({
+ *       threshold: 0,
+ *   });
+ *
+ *   return (
+ *     <div ref={ref}>
+ *       <h2>{`Header inside viewport ${inView}.`}</h2>
+ *     </div>
+ *   );
+ * };
+ * ```
+ */
+export function useInView({
+  threshold,
+  delay,
+  trackVisibility,
+  rootMargin,
+  root,
+  triggerOnce,
+  skip,
+  initialInView,
+}: IntersectionOptions = {}): InViewHookResponse {
+  const unobserve = React.useRef<Function>();
   const [state, setState] = React.useState<State>({
-    inView: false,
-    entry: undefined,
-  })
-
+    inView: !!initialInView,
+  });
   const setRef = React.useCallback(
-    node => {
-      if (ref.current) {
-        unobserve(ref.current)
+    (node) => {
+      if (unobserve.current !== undefined) {
+        unobserve.current();
+        unobserve.current = undefined;
       }
-      if (node) {
-        observe(
-          node,
-          (inView, intersection) => {
-            setState({ inView, entry: intersection })
 
-            if (inView && options.triggerOnce) {
+      // Skip creating the observer
+      if (skip) return;
+
+      if (node) {
+        unobserve.current = observe(
+          node,
+          (inView, entry) => {
+            setState({ inView, entry });
+
+            if (entry.isIntersecting && triggerOnce && unobserve.current) {
               // If it should only trigger once, unobserve the element after it's inView
-              unobserve(node)
+              unobserve.current();
+              unobserve.current = undefined;
             }
           },
-          options,
-        )
+          {
+            root,
+            rootMargin,
+            threshold,
+            // @ts-ignore
+            trackVisibility,
+            // @ts-ignore
+            delay,
+          },
+        );
       }
-
-      // Store a reference to the node
-      ref.current = node
     },
-    [options.threshold, options.root, options.rootMargin, options.triggerOnce],
-  )
+    // We break the rule here, because we aren't including the actual `threshold` variable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      // If the threshold is an array, convert it to a string so it won't change between renders.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      Array.isArray(threshold) ? threshold.toString() : threshold,
+      root,
+      rootMargin,
+      triggerOnce,
+      skip,
+      trackVisibility,
+      delay,
+    ],
+  );
 
-  React.useDebugValue(state.inView)
+  /* eslint-disable-next-line */
+  useEffect(() => {
+    if (!unobserve.current && state.entry && !triggerOnce && !skip) {
+      // If we don't have a ref, then reset the state (unless the hook is set to only `triggerOnce` or `skip`)
+      // This ensures we correctly reflect the current state - If you aren't observing anything, then nothing is inView
+      setState({
+        inView: !!initialInView,
+      });
+    }
+  });
 
-  return [setRef, state.inView, state.entry]
+  const result = [setRef, state.inView, state.entry] as InViewHookResponse;
+
+  // Support object destructuring, by adding the specific values.
+  result.ref = result[0];
+  result.inView = result[1];
+  result.entry = result[2];
+
+  return result;
 }

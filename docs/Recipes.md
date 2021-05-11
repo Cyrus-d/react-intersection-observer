@@ -16,7 +16,7 @@ build it according to your needs.
   [root margin](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin)
   for top and bottom, so the Intersection Observer gets triggered before the
   image enters the viewport. This gives the image a chance to be loaded before
-  the user even sees it. Try and start with something like `200px 0px`, but
+  the user even sees it. Try to start with something like `200px 0px`, but
   experiment with it until you find the right value.
 - Set `triggerOnce`, so you don't keep monitoring for changes.
 - You should always create a wrapping element, that sets the correct aspect
@@ -36,20 +36,20 @@ build it according to your needs.
 > is a small hook that detects support for `loading` as a side effect.
 
 ```jsx
-import React from 'react'
-import useNativeLazyLoading from '@charlietango/use-native-lazy-loading'
-import { useInView } from 'react-intersection-observer'
+import React from 'react';
+import useNativeLazyLoading from '@charlietango/use-native-lazy-loading';
+import { useInView } from 'react-intersection-observer';
 
 const LazyImage = ({ width, height, src, ...rest }) => {
-  const supportsLazyLoading = useNativeLazyLoading()
+  const supportsLazyLoading = useNativeLazyLoading();
   const [ref, inView] = useInView({
     triggerOnce: true,
     rootMargin: '200px 0px',
-  })
+  });
 
   return (
     <div
-      ref={supportsLazyLoading === false ? ref : undefined}
+      ref={!supportsLazyLoading ? ref : undefined}
       style={{
         position: 'relative',
         paddingBottom: `${(height / width) * 100}%`,
@@ -67,10 +67,10 @@ const LazyImage = ({ width, height, src, ...rest }) => {
         />
       ) : null}
     </div>
-  )
-}
+  );
+};
 
-export default LazyImage
+export default LazyImage;
 ```
 
 **See [Codesandbox](https://codesandbox.io/embed/lazy-image-load-mjsgc)**
@@ -88,24 +88,24 @@ for an IntersectionObserver.
   have it go inwards. You can also use a percentage value, instead of pixels.
 
 ```jsx
-import React from 'react'
-import { useInView } from 'react-intersection-observer'
-import { useSpring, animated } from 'react-spring'
+import React from 'react';
+import { useInView } from 'react-intersection-observer';
+import { motion } from 'framer-motion';
 
 const LazyAnimation = () => {
   const [ref, inView] = useInView({
+    triggerOnce: true,
     rootMargin: '-100px 0px',
-  })
-  const props = useSpring({ opacity: inView ? 1 : 0 })
+  });
 
   return (
-    <animated.div ref={ref} style={props}>
+    <motion.div ref={ref} style={{ opacity: inView ? 1 : 0 }}>
       <span aria-label="Wave">👋</span>
-    </animated.div>
-  )
-}
+    </motion.div>
+  );
+};
 
-export default LazyAnimation
+export default LazyAnimation;
 ```
 
 ## Track impressions
@@ -118,28 +118,31 @@ fire an event on your tracking service.
 - Set `threshold`, to control how much of the element should visible before
   firing the event.
 - Instead of `threshold`, you can use `rootMargin` to have a fixed amount be
-  visible before triggering. Use a negative margin value, like `-100px 0`, to
+  visible before triggering. Use a negative margin value, like `-100px 0px`, to
   have it go inwards. You can also use a percentage value, instead of pixels.
 
 ```jsx
-import React, { useEffect } from 'react'
-import { useInView } from 'react-intersection-observer'
+import React, { useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 const TrackImpression = () => {
-  const [ref, inView] = useInView({ triggerOnce: true, rootMargin: '-100px 0' })
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    rootMargin: '-100px 0',
+  });
   useEffect(() => {
     if (inView) {
       // Fire a tracking event to your tracking service of choice.
-      dataLayer.push('Section shown') // Here's a GTM dataLayer push
+      dataLayer.push('Section shown'); // Here's a GTM dataLayer push
     }
-  }, [inView])
+  }, [inView]);
 
   return (
     <div ref={ref}>
       Exemplars sunt zeluss de bassus fuga. Credere velox ducunt ad audax amor.
     </div>
-  )
-}
+  );
+};
 
-export default TrackImpression
+export default TrackImpression;
 ```

@@ -1,35 +1,47 @@
-import * as React from 'react'
-import { InView } from './InView'
+import * as React from 'react';
+import { InView } from './InView';
+export { InView } from './InView';
+export { useInView } from './useInView';
+export default InView;
 
-export { InView } from './InView'
-export { useInView } from './useInView'
-export default InView
-
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type ObserverInstanceCallback = (
   inView: boolean,
-  intersection: IntersectionObserverEntry,
-) => void
+  entry: IntersectionObserverEntry,
+) => void;
 
 export type ObserverInstance = {
-  inView: boolean
-  readonly callback: ObserverInstanceCallback
-  readonly element: Element
-  readonly observerId: string
-  readonly observer: IntersectionObserver
-  readonly thresholds: ReadonlyArray<number>
-}
+  inView: boolean;
+  readonly callback: ObserverInstanceCallback;
+  readonly element: Element;
+  readonly observerId: string;
+  readonly observer: IntersectionObserver;
+  readonly thresholds: ReadonlyArray<number>;
+};
 
 interface RenderProps {
-  inView: boolean
-  entry: IntersectionObserverEntry | undefined
-  ref: React.RefObject<any> | ((node?: Element | null) => void)
+  inView: boolean;
+  entry: IntersectionObserverEntry | undefined;
+  ref: React.RefObject<any> | ((node?: Element | null) => void);
 }
 
 export interface IntersectionOptions extends IntersectionObserverInit {
+  /** The IntersectionObserver interface's read-only `root` property identifies the Element or Document whose bounds are treated as the bounding box of the viewport for the element which is the observer's target. If the `root` is null, then the bounds of the actual document viewport are used.*/
+  root?: Element | null;
+  /** Margin around the root. Can have values similar to the CSS margin property, e.g. `10px 20px 30px 40px` (top, right, bottom, left). */
+  rootMargin?: string;
+  /** Number between `0` and `1` indicating the percentage that should be visible before triggering. Can also be an `array` of numbers, to create multiple trigger points. */
+  threshold?: number | number[];
   /** Only trigger the inView callback once */
-  triggerOnce?: boolean
+  triggerOnce?: boolean;
+  /** Skip assigning the observer to the `ref` */
+  skip?: boolean;
+  initialInView?: boolean;
+  /** IntersectionObserver v2 - Track the actual visibility of the element */
+  trackVisibility?: boolean;
+  /** IntersectionObserver v2 - Set a minimum delay between notifications */
+  delay?: number;
 }
 
 export interface IntersectionObserverProps extends IntersectionOptions {
@@ -38,36 +50,43 @@ export interface IntersectionObserverProps extends IntersectionOptions {
    * contain an `inView` boolean and `ref` that should be
    * assigned to the element root.
    */
-  children: (fields: RenderProps) => React.ReactNode
+  children: (fields: RenderProps) => React.ReactNode;
 
   /** Call this function whenever the in view state changes */
-  onChange?: (inView: boolean, entry: IntersectionObserverEntry) => void
+  onChange?: (inView: boolean, entry: IntersectionObserverEntry) => void;
 }
 
 /**
  * Types specific to the PlainChildren rendering of InView
  * */
 export type PlainChildrenProps = IntersectionOptions & {
-  children: React.ReactNode
+  children: React.ReactNode;
 
   /**
    * Render the wrapping element as this element.
    * @default `'div'`
    */
-  as?: React.ReactType<any>
+  as?: React.ReactType<any>;
 
   /**
    * Element tag to use for the wrapping component
    * @deprecated Replace with the 'as' prop
    */
-  tag?: React.ReactType<any>
+  tag?: React.ReactType<any>;
 
   /** Call this function whenever the in view state changes */
-  onChange?: (inView: boolean, entry: IntersectionObserverEntry) => void
-} & Omit<React.HTMLProps<HTMLElement>, 'onChange'>
+  onChange?: (inView: boolean, entry: IntersectionObserverEntry) => void;
+} & Omit<React.HTMLProps<HTMLElement>, 'onChange'>;
 
+/**
+ * The Hook response supports both array and object destructing
+ */
 export type InViewHookResponse = [
   (node?: Element | null) => void,
   boolean,
   IntersectionObserverEntry | undefined,
-]
+] & {
+  ref: (node?: Element | null) => void;
+  inView: boolean;
+  entry?: IntersectionObserverEntry;
+};
